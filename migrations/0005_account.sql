@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS "public"."account"(
     "total_income" DECIMAL(18, 6) NOT NULL DEFAULT 0,
     "total_expense" DECIMAL(18, 6) NOT NULL DEFAULT 0,
     "is_active" boolean NOT NULL DEFAULT FALSE,
-    "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE ("user_id", "asset_type_id")
 );
 

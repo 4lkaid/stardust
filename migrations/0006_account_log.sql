@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS "public"."account_log"(
     "total_expense_after" DECIMAL(18, 6) NOT NULL,
     "order_number" text NOT NULL DEFAULT '',
     "description" text NOT NULL DEFAULT '',
-    "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE ("account_id", "action_type_id", "order_number")
 );
 

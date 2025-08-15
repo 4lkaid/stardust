@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS "public"."asset_type"(
     "name" text UNIQUE NOT NULL,
     "description" text NOT NULL DEFAULT '',
     "is_active" boolean NOT NULL DEFAULT FALSE,
-    "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMENT ON COLUMN "public"."asset_type"."id" IS '主键自增id';

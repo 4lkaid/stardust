@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS "public"."change_log"(
     "operation_type" text NOT NULL,
     "old_data" jsonb,
     "new_data" jsonb,
-    "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMENT ON COLUMN "public"."change_log"."log_id" IS '主键自增id';
