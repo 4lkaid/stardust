@@ -1,5 +1,4 @@
 use axum_kit::AppResult;
-use num_traits::cast::FromPrimitive;
 use serde::Serialize;
 use sqlx::{
     PgExecutor,
@@ -19,8 +18,8 @@ pub enum Change {
 
 impl Change {
     #[allow(dead_code)]
-    pub fn calculate_change(&self, amount: f64) -> Decimal {
-        let decimal_amount = Decimal::from_f64(amount.abs()).unwrap().trunc_with_scale(6);
+    pub fn calculate_change(&self, amount: Decimal) -> Decimal {
+        let decimal_amount = amount.abs().trunc_with_scale(6);
         match self {
             Change::Inc => decimal_amount,
             Change::Dec => -decimal_amount,

@@ -10,7 +10,6 @@ use crate::{
 };
 use axum::http::StatusCode;
 use axum_kit::{AppResult, error::Error, postgres};
-use num_traits::FromPrimitive;
 use sqlx::types::Decimal;
 use validator::Validate;
 
@@ -129,9 +128,7 @@ impl AccountService {
             Self::check_balance_before_update(
                 action_type,
                 &account,
-                Decimal::from_f64(account_action_request.amount.abs())
-                    .unwrap()
-                    .trunc_with_scale(6),
+                account_action_request.amount.abs().trunc_with_scale(6),
             )
             .await?;
             Self::check_account_log_exists(
@@ -159,14 +156,14 @@ impl AccountService {
             account_action_request.asset_type_id,
         )
         .await?;
-        let amount = account_action_request.amount;
+        let amount = &account_action_request.amount;
         let action_type = ActionTypeService::by_id(account_action_request.action_type_id).unwrap();
         let amount_available_balance = action_type
             .available_balance_change
-            .calculate_change(amount);
-        let amount_frozen_balance = action_type.frozen_balance_change.calculate_change(amount);
-        let amount_total_income = action_type.total_income_change.calculate_change(amount);
-        let amount_total_expense = action_type.total_expense_change.calculate_change(amount);
+            .calculate_change(*amount);
+        let amount_frozen_balance = action_type.frozen_balance_change.calculate_change(*amount);
+        let amount_total_income = action_type.total_income_change.calculate_change(*amount);
+        let amount_total_expense = action_type.total_expense_change.calculate_change(*amount);
         let account = AccountModel::update_balance(
             &mut **tx,
             account_action_request.user_id,

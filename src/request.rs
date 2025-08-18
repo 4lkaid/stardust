@@ -4,9 +4,9 @@ use crate::{
 };
 use axum::http::StatusCode;
 use axum_kit::{AppResult, error::Error};
-use num_traits::FromPrimitive;
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 use sqlx::types::Decimal;
+use std::str::FromStr as _;
 use validator::{Validate, ValidationError};
 
 #[derive(Deserialize, Validate, Debug)]
@@ -31,8 +31,9 @@ pub struct AccountActionRequest {
     pub asset_type_id: i32,
     #[validate(custom(function = "validate_action_type_id"))]
     pub action_type_id: i32,
-    #[validate(range(min = 0.000001), custom(function = "validate_amount"))]
-    pub amount: f64,
+    #[validate(custom(function = "validate_amount"))]
+    #[serde(deserialize_with = "deserialize_decimal")]
+    pub amount: Decimal,
     #[validate(length(min = 32))]
     pub order_number: String,
     #[validate(length(min = 1))]
@@ -89,9 +90,15 @@ fn validate_action_type_id(id: i32) -> Result<(), ValidationError> {
     Ok(())
 }
 
-fn validate_amount(amount: f64) -> Result<(), ValidationError> {
-    if Decimal::from_f64(amount).unwrap().scale() > 6 {
-        return Err(ValidationError::new("无效值(最多6位小数)"));
+fn validate_amount(amount: &Decimal) -> Result<(), ValidationError> {
+    if amount.scale() > 6 {
+        return Err(ValidationError::new(
+            "金额小数位最多为6位（例如最多保留\"1.234567\"）",
+        ));
+    }
+    let min_amount = Decimal::from_str("0.000001").unwrap();
+    if amount < &min_amount {
+        return Err(ValidationError::new("金额不能小于0.000001（即1e-6）"));
     }
     Ok(())
 }
@@ -101,4 +108,12 @@ fn validate_date_format(date: &str) -> Result<(), ValidationError> {
         return Err(ValidationError::new("无效值"));
     }
     Ok(())
+}
+
+fn deserialize_decimal<'de, D>(deserializer: D) -> Result<Decimal, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: String = String::deserialize(deserializer)?;
+    Decimal::from_str(&s).map_err(|_| serde::de::Error::custom("金额格式错误，请输入有效的数字字符串（支持整数或最多6位小数的小数，例如\"100\"、\"1.234567\"）"))
 }
