@@ -2,7 +2,10 @@ use axum_kit::AppResult;
 use serde::Serialize;
 use sqlx::{
     PgExecutor,
-    types::{Decimal, chrono::NaiveDateTime},
+    types::{
+        Decimal,
+        chrono::{DateTime, Utc},
+    },
 };
 
 #[derive(Serialize)]
@@ -17,10 +20,10 @@ pub struct AccountModel {
     pub is_active: bool,
     #[allow(dead_code)]
     #[serde(skip_serializing)]
-    pub created_at: NaiveDateTime,
+    pub created_at: DateTime<Utc>,
     #[allow(dead_code)]
     #[serde(skip_serializing)]
-    pub updated_at: NaiveDateTime,
+    pub updated_at: DateTime<Utc>,
 }
 
 impl AccountModel {

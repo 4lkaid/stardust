@@ -1,8 +1,12 @@
+use super::serialize_utc_to_session_tz;
 use axum_kit::AppResult;
 use serde::Serialize;
 use sqlx::{
     PgExecutor, QueryBuilder,
-    types::{Decimal, chrono::NaiveDateTime},
+    types::{
+        Decimal,
+        chrono::{DateTime, Utc},
+    },
 };
 
 #[derive(Serialize, sqlx::FromRow)]
@@ -24,7 +28,8 @@ pub struct AccountLogModel {
     pub total_expense_after: Decimal,
     pub order_number: String,
     pub description: String,
-    pub created_at: NaiveDateTime,
+    #[serde(serialize_with = "serialize_utc_to_session_tz")]
+    pub created_at: DateTime<Utc>,
 }
 
 impl AccountLogModel {
@@ -104,8 +109,8 @@ impl AccountLogModel {
         executor: impl PgExecutor<'_>,
         account_id: i32,
         action_type_id: Option<i32>,
-        start_time: Option<NaiveDateTime>,
-        end_time: Option<NaiveDateTime>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
         page: i32,
         page_size: i32,
     ) -> AppResult<Vec<Self>> {

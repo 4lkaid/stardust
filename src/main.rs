@@ -4,6 +4,7 @@ mod model;
 mod request;
 mod route;
 mod service;
+mod utils;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

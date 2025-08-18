@@ -6,6 +6,7 @@ use crate::{
         action_type::{ActionTypeModel, Change},
     },
     request::{AccountActionRequest, AccountLogRequest, AccountRequest, AccountsRequest},
+    utils,
 };
 use axum::http::StatusCode;
 use axum_kit::{AppResult, error::Error, postgres};
@@ -208,22 +209,23 @@ impl AccountService {
             account_log_request.asset_type_id,
         )
         .await?;
+
+        let tz: chrono_tz::Tz = postgres::pg_session_timezone().parse().unwrap();
+
         let account_logs = AccountLogModel::query_with_pagination(
             postgres::conn(),
             account.id,
             account_log_request.action_type_id,
-            match &account_log_request.start_time {
-                Some(start_time) => chrono::NaiveDate::parse_from_str(start_time, "%Y-%m-%d")
-                    .unwrap()
-                    .and_hms_opt(0, 0, 0),
-                None => None,
-            },
-            match &account_log_request.end_time {
-                Some(end_time) => chrono::NaiveDate::parse_from_str(end_time, "%Y-%m-%d")
-                    .unwrap()
-                    .and_hms_opt(23, 59, 59),
-                None => None,
-            },
+            account_log_request
+                .start_time
+                .as_ref()
+                .map(|s| utils::parse_day_boundary(s, tz, utils::DayBoundary::Start))
+                .transpose()?,
+            account_log_request
+                .end_time
+                .as_ref()
+                .map(|s| utils::parse_day_boundary(s, tz, utils::DayBoundary::End))
+                .transpose()?,
             account_log_request.page,
             account_log_request.page_size,
         )
