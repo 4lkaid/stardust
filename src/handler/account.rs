@@ -42,7 +42,6 @@ pub async fn actions(
 pub async fn logs(
     ValidatedJson(payload): ValidatedJson<AccountLogRequest>,
 ) -> AppResult<Json<Vec<AccountLogModel>>> {
-    payload.validate_time_range()?;
     let account_logs = AccountService::logs(&payload).await?;
     Ok(Json(account_logs))
 }

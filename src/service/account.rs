@@ -199,7 +199,6 @@ impl AccountService {
 
     pub async fn logs(account_log_request: &AccountLogRequest) -> AppResult<Vec<AccountLogModel>> {
         account_log_request.validate()?;
-        account_log_request.validate_time_range()?;
         let account = AccountModel::find(
             postgres::conn(),
             account_log_request.user_id,

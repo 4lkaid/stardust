@@ -2,8 +2,6 @@ use crate::{
     constant::{MAX_PAGE_SIZE, MIN_PAGE, MIN_PAGE_SIZE},
     service::{action_type::ActionTypeService, asset_type::AssetTypeService},
 };
-use axum::http::StatusCode;
-use axum_kit::{AppResult, error::Error};
 use serde::{Deserialize, Deserializer};
 use sqlx::types::Decimal;
 use std::str::FromStr as _;
@@ -41,6 +39,7 @@ pub struct AccountActionRequest {
 }
 
 #[derive(Deserialize, Validate, Debug)]
+#[validate(schema(function = "validate_time_range"))]
 pub struct AccountLogRequest {
     #[validate(range(min = 1))]
     pub user_id: i32,
@@ -58,22 +57,17 @@ pub struct AccountLogRequest {
     pub page_size: i32,
 }
 
-impl AccountLogRequest {
-    pub fn validate_time_range(&self) -> AppResult<()> {
-        if let (Some(start_time), Some(end_time)) = (&self.start_time, &self.end_time) {
-            let start = chrono::NaiveDate::parse_from_str(start_time, "%Y-%m-%d");
-            let end = chrono::NaiveDate::parse_from_str(end_time, "%Y-%m-%d");
-            if let (Ok(start), Ok(end)) = (start, end) {
-                if start > end {
-                    return Err(Error::Custom(
-                        StatusCode::UNPROCESSABLE_ENTITY,
-                        "end_time 必须大于等于 start_time".to_string(),
-                    ));
-                }
+fn validate_time_range(request: &AccountLogRequest) -> Result<(), ValidationError> {
+    if let (Some(start_time), Some(end_time)) = (&request.start_time, &request.end_time) {
+        let start = chrono::NaiveDate::parse_from_str(start_time, "%Y-%m-%d");
+        let end = chrono::NaiveDate::parse_from_str(end_time, "%Y-%m-%d");
+        if let (Ok(start), Ok(end)) = (start, end) {
+            if start > end {
+                return Err(ValidationError::new("end_time 必须大于等于 start_time"));
             }
         }
-        Ok(())
     }
+    Ok(())
 }
 
 fn validate_asset_type_id(id: i32) -> Result<(), ValidationError> {
