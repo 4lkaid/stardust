@@ -4,12 +4,12 @@ use crate::{
 };
 use serde::{Deserialize, Deserializer};
 use sqlx::types::Decimal;
-use std::str::FromStr as _;
+use std::{borrow::Cow, str::FromStr as _};
 use validator::{Validate, ValidationError};
 
 #[derive(Deserialize, Validate, Debug)]
 pub struct AccountRequest {
-    #[validate(range(min = 1))]
+    #[validate(range(min = 1, message = "用户ID必须为正整数"))]
     pub user_id: i32,
     #[validate(custom(function = "validate_asset_type_id"))]
     pub asset_type_id: i32,
@@ -17,13 +17,13 @@ pub struct AccountRequest {
 
 #[derive(Deserialize, Validate, Debug)]
 pub struct AccountsRequest {
-    #[validate(range(min = 1))]
+    #[validate(range(min = 1, message = "用户ID必须为正整数"))]
     pub user_id: i32,
 }
 
 #[derive(Deserialize, Validate, Debug)]
 pub struct AccountActionRequest {
-    #[validate(range(min = 1))]
+    #[validate(range(min = 1, message = "用户ID必须为正整数"))]
     pub user_id: i32,
     #[validate(custom(function = "validate_asset_type_id"))]
     pub asset_type_id: i32,
@@ -32,16 +32,16 @@ pub struct AccountActionRequest {
     #[validate(custom(function = "validate_amount"))]
     #[serde(deserialize_with = "deserialize_decimal")]
     pub amount: Decimal,
-    #[validate(length(min = 32))]
+    #[validate(length(min = 32, message = "订单号长度至少32位"))]
     pub order_number: String,
-    #[validate(length(min = 1))]
+    #[validate(length(min = 1, message = "描述不能为空"))]
     pub description: String,
 }
 
 #[derive(Deserialize, Validate, Debug)]
 #[validate(schema(function = "validate_time_range"))]
 pub struct AccountLogRequest {
-    #[validate(range(min = 1))]
+    #[validate(range(min = 1, message = "用户ID必须为正整数"))]
     pub user_id: i32,
     #[validate(custom(function = "validate_asset_type_id"))]
     pub asset_type_id: i32,
@@ -63,7 +63,8 @@ fn validate_time_range(request: &AccountLogRequest) -> Result<(), ValidationErro
         let end = chrono::NaiveDate::parse_from_str(end_time, "%Y-%m-%d");
         if let (Ok(start), Ok(end)) = (start, end) {
             if start > end {
-                return Err(ValidationError::new("end_time 必须大于等于 start_time"));
+                return Err(ValidationError::new("time_range")
+                    .with_message(Cow::Borrowed("结束时间不能早于开始时间")));
             }
         }
     }
@@ -72,34 +73,41 @@ fn validate_time_range(request: &AccountLogRequest) -> Result<(), ValidationErro
 
 fn validate_asset_type_id(id: i32) -> Result<(), ValidationError> {
     if !AssetTypeService::is_active(id) {
-        return Err(ValidationError::new("无效值"));
+        return Err(
+            ValidationError::new("asset_type_id").with_message(Cow::Borrowed("无效的资产类型"))
+        );
     }
     Ok(())
 }
 
 fn validate_action_type_id(id: i32) -> Result<(), ValidationError> {
     if !ActionTypeService::is_active(id) {
-        return Err(ValidationError::new("无效值"));
+        return Err(
+            ValidationError::new("action_type_id").with_message(Cow::Borrowed("无效的操作类型"))
+        );
     }
     Ok(())
 }
 
 fn validate_amount(amount: &Decimal) -> Result<(), ValidationError> {
     if amount.scale() > 6 {
-        return Err(ValidationError::new(
-            "金额小数位最多为6位（例如最多保留\"1.234567\"）",
-        ));
+        return Err(
+            ValidationError::new("amount").with_message(Cow::Borrowed("金额最多支持6位小数"))
+        );
     }
     let min_amount = Decimal::from_str("0.000001").unwrap();
     if amount < &min_amount {
-        return Err(ValidationError::new("金额不能小于0.000001（即1e-6）"));
+        return Err(
+            ValidationError::new("amount").with_message(Cow::Borrowed("金额不能小于0.000001"))
+        );
     }
     Ok(())
 }
 
 fn validate_date_format(date: &str) -> Result<(), ValidationError> {
     if chrono::NaiveDate::parse_from_str(date, "%Y-%m-%d").is_err() {
-        return Err(ValidationError::new("无效值"));
+        return Err(ValidationError::new("date_format")
+            .with_message(Cow::Borrowed("日期格式应为YYYY-MM-DD")));
     }
     Ok(())
 }
@@ -109,5 +117,5 @@ where
     D: Deserializer<'de>,
 {
     let s: String = String::deserialize(deserializer)?;
-    Decimal::from_str(&s).map_err(|_| serde::de::Error::custom("金额格式错误，请输入有效的数字字符串（支持整数或最多6位小数的小数，例如\"100\"、\"1.234567\"）"))
+    Decimal::from_str(&s).map_err(|_| serde::de::Error::custom("请输入有效金额"))
 }

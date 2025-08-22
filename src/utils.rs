@@ -16,14 +16,14 @@ pub fn parse_day_boundary(date_str: &str, tz: Tz, boundary: DayBoundary) -> Resu
         DayBoundary::Start => tz
             .with_ymd_and_hms(date.year(), date.month(), date.day(), 0, 0, 0)
             .single()
-            .ok_or_else(|| anyhow!("{}在{}时区不存在零点时间", date_str, tz))?,
+            .ok_or_else(|| anyhow!("日期{}在{}时区无效", date_str, tz))?,
         DayBoundary::End => {
             let next_day = date
                 .succ_opt()
-                .ok_or_else(|| anyhow!("{}已是最后日期，无下一天", date_str))?;
+                .ok_or_else(|| anyhow!("日期{}无下一天", date_str))?;
             tz.with_ymd_and_hms(next_day.year(), next_day.month(), next_day.day(), 0, 0, 0)
                 .earliest()
-                .ok_or_else(|| anyhow!("{}的下一天在{}时区无零点时间", date_str, tz))?
+                .ok_or_else(|| anyhow!("日期{}的下一天在{}时区无效", date_str, tz))?
                 - Duration::microseconds(1)
         }
     };

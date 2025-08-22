@@ -19,7 +19,7 @@ where
     // 直接复用现有会话时区获取逻辑
     let tz: Tz = postgres::pg_session_timezone()
         .parse()
-        .map_err(|e| serde::ser::Error::custom(format!("解析时区失败: {}", e)))?;
+        .map_err(|_| serde::ser::Error::custom("解析时区失败"))?;
 
     // 转换为会话时区并序列化
     let local_time = utc_time.with_timezone(&tz);
