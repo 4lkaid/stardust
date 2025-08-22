@@ -19,13 +19,11 @@ impl AssetTypeService {
         ASSET_TYPE.get().expect("ASSET_TYPE is not initialized")
     }
 
-    #[allow(dead_code)]
     pub fn is_active(id: i32) -> bool {
         let asset_types = Self::list();
         asset_types.iter().any(|asset_type| asset_type.id == id)
     }
 
-    #[allow(dead_code)]
     pub fn ids() -> Vec<i32> {
         let asset_types = Self::list();
         asset_types.iter().map(|asset_type| asset_type.id).collect()

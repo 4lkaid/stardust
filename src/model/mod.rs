@@ -8,7 +8,6 @@ use chrono::{DateTime, Utc};
 use chrono_tz::Tz;
 use serde::Serializer;
 
-#[allow(dead_code)]
 fn serialize_utc_to_session_tz<S>(
     utc_time: &DateTime<Utc>,
     serializer: S,

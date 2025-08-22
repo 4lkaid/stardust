@@ -117,7 +117,6 @@ impl AccountModel {
         Ok(accounts)
     }
 
-    #[allow(dead_code)]
     pub async fn update_balance(
         executor: impl PgExecutor<'_>,
         user_id: i32,
@@ -162,7 +161,6 @@ impl AccountModel {
     }
 
     // 资产账户是否存在
-    #[allow(dead_code)]
     pub async fn is_exists(
         executor: impl PgExecutor<'_>,
         user_id: i32,
@@ -182,7 +180,6 @@ impl AccountModel {
     }
 
     // 资产账户是否启用
-    #[allow(dead_code)]
     pub async fn is_active(
         executor: impl PgExecutor<'_>,
         user_id: i32,

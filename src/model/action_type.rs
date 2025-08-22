@@ -17,7 +17,6 @@ pub enum Change {
 }
 
 impl Change {
-    #[allow(dead_code)]
     pub fn calculate_change(&self, amount: Decimal) -> Decimal {
         let decimal_amount = amount.abs().trunc_with_scale(6);
         match self {

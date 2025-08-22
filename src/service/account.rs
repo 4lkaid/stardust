@@ -79,6 +79,14 @@ impl AccountService {
     pub async fn create(account_request: &AccountRequest) -> AppResult<AccountModel> {
         account_request.validate()?;
         let pool = postgres::conn();
+        if AccountModel::is_exists(pool, account_request.user_id, account_request.asset_type_id)
+            .await
+        {
+            return Err(Error::Custom(
+                StatusCode::CONFLICT,
+                "添加失败，该账户已存在".to_string(),
+            ));
+        }
         let account =
             AccountModel::create(pool, account_request.user_id, account_request.asset_type_id)
                 .await?;

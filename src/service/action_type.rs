@@ -19,13 +19,11 @@ impl ActionTypeService {
         ACTION_TYPE.get().expect("ACTION_TYPE is not initialized")
     }
 
-    #[allow(dead_code)]
     pub fn is_active(id: i32) -> bool {
         let action_types = Self::list();
         action_types.iter().any(|action_type| action_type.id == id)
     }
 
-    #[allow(dead_code)]
     pub fn by_id(id: i32) -> Option<&'static ActionTypeModel> {
         let action_types = Self::list();
         action_types

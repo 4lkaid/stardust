@@ -84,7 +84,6 @@ impl AccountLogModel {
     }
 
     // 账户操作日志是否存在
-    #[allow(dead_code)]
     pub async fn is_exists(
         executor: impl PgExecutor<'_>,
         account_id: i32,
