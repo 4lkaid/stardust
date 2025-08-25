@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS "public"."account_log"(
     UNIQUE ("account_id", "action_type_id", "order_number")
 );
 
-CREATE INDEX account_log_account_id_action_type_id_idx ON "public"."account_log"("account_id", "action_type_id");
+CREATE INDEX account_log_query_idx ON "public"."account_log"("account_id", "action_type_id", "created_at" DESC);
 
 COMMENT ON COLUMN "public"."account_log"."id" IS '主键自增id';
 
