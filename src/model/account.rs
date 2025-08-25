@@ -34,7 +34,7 @@ impl AccountModel {
     ) -> AppResult<Self> {
         let account = sqlx::query_as!(
             Self,
-            r#"insert into account (user_id, asset_type_id, is_active)
+            r#"insert into account(user_id, asset_type_id, is_active)
                 values ($1, $2, true)
             returning
                 id,

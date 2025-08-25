@@ -50,7 +50,7 @@ impl AccountLogModel {
         description: &str,
     ) -> AppResult<()> {
         sqlx::query!(
-            r#"insert into account_log (
+            r#"insert into account_log(
                 account_id,
                 action_type_id,
                 amount_available_balance,
@@ -114,23 +114,40 @@ impl AccountLogModel {
         page_size: i32,
     ) -> AppResult<Vec<Self>> {
         let offset = (page - 1) * page_size;
-        let mut query_builder = QueryBuilder::new("SELECT * FROM account_log WHERE account_id = ");
+        let mut query_builder = QueryBuilder::new(
+            "select
+                id,
+                account_id,
+                action_type_id,
+                amount_available_balance,
+                amount_frozen_balance,
+                amount_total_income,
+                amount_total_expense,
+                available_balance_after,
+                frozen_balance_after,
+                total_income_after,
+                total_expense_after,
+                order_number,
+                description,
+                created_at
+            from account_log where account_id = ",
+        );
         query_builder.push_bind(account_id);
         if let Some(action_type) = action_type_id {
-            query_builder.push(" AND action_type_id = ");
+            query_builder.push(" and action_type_id = ");
             query_builder.push_bind(action_type);
         }
         if let Some(start) = start_time {
-            query_builder.push(" AND created_at >= ");
+            query_builder.push(" and created_at >= ");
             query_builder.push_bind(start);
         }
         if let Some(end) = end_time {
-            query_builder.push(" AND created_at <= ");
+            query_builder.push(" and created_at <= ");
             query_builder.push_bind(end);
         }
-        query_builder.push(" ORDER BY created_at DESC LIMIT ");
+        query_builder.push(" order by created_at desc limit ");
         query_builder.push_bind(page_size);
-        query_builder.push(" OFFSET ");
+        query_builder.push(" offset ");
         query_builder.push_bind(offset);
         let rows = query_builder
             .build_query_as::<AccountLogModel>()
